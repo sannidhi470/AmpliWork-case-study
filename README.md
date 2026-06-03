@@ -134,6 +134,9 @@ When a filter changes, the table updates without a full page reload. Always show
 **Transaction detail modal:**
 Clicking any row opens a modal that shows a full breakdown of that transaction: amount, date, category, bank account, authorized by, vendor, and any additional fields from the raw bank data.
 
+**CSV export:**
+Add an "Export CSV" button above the table. Clicking it downloads a `.csv` file containing all transactions that match the currently active filters (or all transactions if no filters are applied). The exported file should include the same columns shown in the table.
+
 **Loading and empty states:** Show a loading indicator while data is being fetched. Show a helpful empty message if no transactions match the filters.
 
 ---
@@ -266,7 +269,7 @@ The layout and structure should match the designs. Pixel-perfect polish is not r
 | Auth & access control | Login flow works, localStorage is used correctly, RBAC is enforced per role |
 | Data normalization | All three banks are merged into one model, field names are mapped correctly, `authorizedBy` resolves to a real user |
 | Multi-currency | Original currencies are preserved, conversion via `rates.json` works correctly |
-| Transactions tab | Filters work, table updates without full reload, modal shows correct details, currency switching works, Authorized By tooltip shows correct user info |
+| Transactions tab | Filters work, table updates without full reload, modal shows correct details, currency switching works, Authorized By tooltip shows correct user info, CSV export works with and without filters applied |
 | Stats tab | 2 KPI cards shown, at least 2 charts implemented, vendor breakdown table present |
 | Code quality | TypeScript used properly, logic separated from UI, sensible folder structure |
 | Submission README | Clear setup instructions, architecture notes, tradeoffs explained, AI tool usage disclosed |
