@@ -257,3 +257,56 @@ export interface TransactionFilters {
   amount?: number; // minimum amount (in each row's original currency)
   fromDate?: string; // YYYY-MM-DD, inclusive
 }
+
+/* ------------------------------------------------------------------ *
+ * Stats (aggregated summary returned by GET /api/stats)
+ *
+ * All monetary values are normalized to USD on the server using
+ * rates.json, so the client never has to do currency math.
+ * ------------------------------------------------------------------ */
+
+/** Total debit ("spend") for one vendor, in USD. */
+export interface VendorSpend {
+  vendor: string;
+  total: number; // USD
+  count: number; // number of debit transactions
+  lastDate: string; // most recent transaction date (YYYY-MM-DD)
+}
+
+/** Total debit ("spend") for one category, in USD. */
+export interface CategorySpend {
+  category: string;
+  total: number; // USD
+}
+
+/** Money in vs money out for a single calendar month, in USD. */
+export interface MonthlyFlow {
+  month: string; // "YYYY-MM"
+  cashIn: number; // USD, sum of credits
+  cashOut: number; // USD, sum of debits
+}
+
+/** A single point on a bank's running-balance line, in USD. */
+export interface BalancePoint {
+  month: string; // "YYYY-MM"
+  balance: number; // USD, cumulative net (credits - debits) through this month
+}
+
+/** Aggregated company-wide stats. Everything is pre-converted to USD. */
+export interface StatsSummary {
+  currency: "USD";
+  totalCashIn: number; // sum of all credit transactions
+  totalCashOut: number; // sum of all debit transactions
+  netCashFlow: number; // cashIn - cashOut
+  transactionCount: number;
+  vendorCount: number; // unique vendors across all transactions
+  topVendors: VendorSpend[]; // ranked by total spend, desc
+  byCategory: CategorySpend[]; // ranked by total spend, desc
+  byMonth: MonthlyFlow[]; // chronological, earliest first
+  /**
+   * Running balance per bank across the full statement period (chronological).
+   * Derived as the cumulative net of normalized transactions in USD, since the
+   * three banks expose balances inconsistently (see README).
+   */
+  balanceByBank: Record<BankId, BalancePoint[]>;
+}
