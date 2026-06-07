@@ -190,3 +190,68 @@ export interface LoginResponse {
 export interface ApiError {
   error: string;
 }
+
+/* ------------------------------------------------------------------ *
+ * Currency
+ * ------------------------------------------------------------------ */
+
+export type CurrencyCode = "USD" | "EUR" | "GBP" | "CAD";
+
+/** Shape of `data/rates.json`. Rates are "USD per 1 unit of currency". */
+export interface RatesFile {
+  note: string;
+  base: CurrencyCode;
+  asOf: string;
+  rates: Record<string, number>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Normalized transaction model
+ * ------------------------------------------------------------------ */
+
+export type TransactionType = "debit" | "credit";
+
+/**
+ * A user resolved from `user.json` and embedded on a transaction.
+ * Password-free; carries just what the UI (and the Authorized By tooltip)
+ * needs, plus `id` so the API can filter by `authorizedBy`.
+ */
+export interface ResolvedUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  title: string;
+  department: string;
+}
+
+/** The raw per-transaction object from whichever bank it came from. */
+export type RawTransaction = ChaseTransaction | BoaTransaction | AmexCharge;
+
+/** One transaction in the unified shape returned by /api/transactions. */
+export interface NormalizedTransaction {
+  id: string;
+  date: string; // YYYY-MM-DD
+  description: string;
+  amount: number; // positive magnitude, in the original `currency`
+  currency: string; // original currency code, preserved as-is
+  type: TransactionType;
+  category: string;
+  vendor: string;
+  bank: BankId;
+  /**
+   * Resolved user (by name match), or null if the name isn't in user.json.
+   * The raw bank name remains available on `source` if ever needed.
+   */
+  authorizedBy: ResolvedUser | null;
+  /** Original raw object from the source bank (powers the detail modal). */
+  source: RawTransaction;
+}
+
+/** Optional filters accepted by GET /api/transactions. */
+export interface TransactionFilters {
+  bank?: BankId;
+  authorizedBy?: string; // user id
+  amount?: number; // minimum amount (in each row's original currency)
+  fromDate?: string; // YYYY-MM-DD, inclusive
+}
