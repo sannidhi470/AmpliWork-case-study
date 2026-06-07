@@ -239,6 +239,8 @@ export interface NormalizedTransaction {
   category: string;
   vendor: string;
   bank: BankId;
+  /** Display label for the source account, e.g. "BoA ****7892". */
+  bankAccount: string;
   /**
    * Resolved user (by name match), or null if the name isn't in user.json.
    * The raw bank name remains available on `source` if ever needed.

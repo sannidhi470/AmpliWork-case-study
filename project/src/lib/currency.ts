@@ -42,6 +42,23 @@ export function convertToUSD(amount: number, from: string): number {
   return convert(amount, from, "USD");
 }
 
+/**
+ * A user's "Show Currency In" selection: keep originals, or convert everything
+ * to one target currency.
+ */
+export type DisplayCurrency = "original" | CurrencyCode;
+
+/** Resolve the amount + currency to actually display for a transaction. */
+export function resolveDisplayAmount(
+  tx: { amount: number; currency: string },
+  display: DisplayCurrency,
+): { amount: number; currency: string } {
+  if (display === "original") {
+    return { amount: tx.amount, currency: tx.currency };
+  }
+  return { amount: convert(tx.amount, tx.currency, display), currency: display };
+}
+
 /** Format an amount as a currency string, e.g. 12480 USD -> "$12,480.00". */
 export function formatCurrency(amount: number, currency: string): string {
   try {

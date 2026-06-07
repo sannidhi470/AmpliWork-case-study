@@ -17,6 +17,7 @@
  *   authorizedBy chase.initiatedBy.name | boa.originator.name | amex.employee.name -> user.json
  */
 
+import { formatBankAccount } from "./bankMeta";
 import type {
   AmexFile,
   BoaFile,
@@ -56,6 +57,10 @@ export function normalizeChase(
   file: ChaseFile,
   resolve: UserResolver,
 ): NormalizedTransaction[] {
+  const bankAccount = formatBankAccount(
+    "chase",
+    file.account.maskedAccountNumber,
+  );
   return file.transactions.map((tx) => ({
     id: tx.transactionId,
     date: tx.transactionDate,
@@ -66,6 +71,7 @@ export function normalizeChase(
     category: tx.categoryName,
     vendor: tx.merchantName,
     bank: "chase",
+    bankAccount,
     authorizedBy: resolve(tx.initiatedBy.name),
     source: tx,
   }));
@@ -75,6 +81,10 @@ export function normalizeBoa(
   file: BoaFile,
   resolve: UserResolver,
 ): NormalizedTransaction[] {
+  const bankAccount = formatBankAccount(
+    "boa",
+    file.accountSummary.accountNumber,
+  );
   return file.transactionList.map((tx) => ({
     id: tx.id,
     date: tx.transactionDate,
@@ -85,6 +95,7 @@ export function normalizeBoa(
     category: tx.spendingCategory,
     vendor: tx.payee,
     bank: "boa",
+    bankAccount,
     authorizedBy: resolve(tx.originator.name),
     source: tx,
   }));
@@ -94,6 +105,7 @@ export function normalizeAmex(
   file: AmexFile,
   resolve: UserResolver,
 ): NormalizedTransaction[] {
+  const bankAccount = formatBankAccount("amex", file.cardMember.last5);
   return file.data.charges.map((tx) => ({
     id: tx.chargeId,
     date: tx.transactionDate,
@@ -104,6 +116,7 @@ export function normalizeAmex(
     category: tx.merchant.category,
     vendor: tx.merchant.name,
     bank: "amex",
+    bankAccount,
     authorizedBy: resolve(tx.employee.name),
     source: tx,
   }));

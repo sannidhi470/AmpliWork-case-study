@@ -30,9 +30,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#070b11] text-slate-100">
+    <div className="flex h-screen overflow-hidden bg-[#070b11] text-slate-100">
       <DashboardSidebar user={user} onLogout={logout} />
-      <main className="flex-1 overflow-x-hidden px-8 py-6">{children}</main>
+      <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
     </div>
   );
 }
