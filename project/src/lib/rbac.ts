@@ -36,7 +36,7 @@ export const TAB_META: Record<TabId, TabMeta> = {
     href: "/dashboard/transactions",
   },
   stats: { id: "stats", label: "Stats", href: "/dashboard/stats" },
-  custom: { id: "custom", label: "Custom", href: "/dashboard/custom" },
+  custom: { id: "custom", label: "Watchlist", href: "/dashboard/custom" },
 };
 
 export function canAccessTab(

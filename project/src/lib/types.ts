@@ -310,3 +310,56 @@ export interface StatsSummary {
    */
   balanceByBank: Record<BankId, BalancePoint[]>;
 }
+
+/* ------------------------------------------------------------------ *
+ * Review Priority (Custom tab)
+ *
+ * A materiality-first review queue: outgoing payments (debits) ranked by
+ * USD value, bucketed into ABC tiers by cumulative share of spend, with
+ * secondary "context" flags to help a finance reviewer decide what to open
+ * first. Returned by GET /api/review.
+ * ------------------------------------------------------------------ */
+
+/** Secondary, non-size context signals shown as chips on a review row. */
+export type ReviewFlag =
+  | "foreign_currency"
+  | "weekend"
+  | "possible_duplicate"
+  | "non_finance_approver"
+  | "unresolved_approver";
+
+/**
+ * Materiality tier (ABC-style), assigned by cumulative share of total spend:
+ *   A: within the first 50% of spend  (highest priority)
+ *   B: 50%–80%
+ *   C: 80%–95%
+ *   D: the long tail (95%–100%)
+ */
+export type MaterialityTier = "A" | "B" | "C" | "D";
+
+/** One ranked transaction in the review queue. */
+export interface ReviewItem {
+  transaction: NormalizedTransaction;
+  amountUsd: number;
+  shareOfSpend: number; // 0..1, this payment's share of total debit spend
+  cumulativeShare: number; // 0..1, cumulative share through this payment
+  tier: MaterialityTier;
+  flags: ReviewFlag[];
+}
+
+/** Headline figures computed across ALL debit transactions. */
+export interface ReviewSummary {
+  currency: "USD";
+  totalSpend: number; // sum of all debits, USD
+  debitCount: number;
+  /** Concentration: the top `count` payments cover `share` (0..1) of spend. */
+  topConcentration: { count: number; share: number };
+  tierCounts: Record<MaterialityTier, number>;
+  flagCounts: Record<ReviewFlag, number>;
+}
+
+/** Payload of GET /api/review: summary over all debits + the top-N queue. */
+export interface ReviewQueue {
+  summary: ReviewSummary;
+  items: ReviewItem[]; // top-N by USD value, descending
+}

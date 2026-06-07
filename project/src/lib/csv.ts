@@ -10,7 +10,8 @@
 import { resolveDisplayAmount } from "./currency";
 import type { DisplayCurrency } from "./currency";
 import { formatDate } from "./format";
-import type { NormalizedTransaction } from "./types";
+import { FLAG_LABELS, TIER_LABELS } from "./review";
+import type { NormalizedTransaction, ReviewItem } from "./types";
 
 const COLUMNS = [
   "Transaction",
@@ -49,6 +50,45 @@ export function transactionsToCsv(
   });
 
   return [COLUMNS.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+}
+
+const REVIEW_COLUMNS = [
+  "Priority",
+  "Amount (USD)",
+  "Share of Spend",
+  "Transaction",
+  "Original Amount",
+  "Date",
+  "Category",
+  "Bank Account",
+  "Authorized By",
+  "Vendor",
+  "Flags",
+] as const;
+
+/** CSV for the Review Priority queue: USD-ranked with tier + context flags. */
+export function reviewQueueToCsv(items: ReviewItem[]): string {
+  const rows = items.map(({ transaction: tx, amountUsd, shareOfSpend, tier, flags }) => {
+    const authorizedBy = tx.authorizedBy?.name ?? "Unknown";
+    const flagText = flags.map((f) => FLAG_LABELS[f]).join("; ");
+    return [
+      TIER_LABELS[tier],
+      `USD ${amountUsd.toFixed(2)}`,
+      `${(shareOfSpend * 100).toFixed(2)}%`,
+      tx.description,
+      `${tx.currency} ${tx.amount.toFixed(2)}`,
+      formatDate(tx.date),
+      tx.category,
+      tx.bankAccount,
+      authorizedBy,
+      tx.vendor,
+      flagText,
+    ].map(csvCell);
+  });
+
+  return [REVIEW_COLUMNS.join(","), ...rows.map((r) => r.join(","))].join(
+    "\r\n",
+  );
 }
 
 /** Trigger a client-side download of the given CSV string. */
